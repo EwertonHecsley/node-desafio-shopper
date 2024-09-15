@@ -1,5 +1,10 @@
 import 'dotenv/config';
 import app from "./app";
+import EnvironmentValidator from './EnvironmentValidator';
+
+const envValidator = new EnvironmentValidator();
+
+envValidator.validateEnvironmentVariables();
 
 const PORT = process.env.PORT;
 
