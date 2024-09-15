@@ -11,7 +11,8 @@ class EnvironmentValidator {
         return joi.object(
             {
                 NODE_ENV: joi.string().valid('development', 'production', 'test').required(),
-                PORT: joi.number()
+                PORT: joi.number(),
+                GEMINI_API_KEY: joi.string()
             }
         ).unknown(true);
     }

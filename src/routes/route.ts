@@ -5,6 +5,6 @@ const route = Router();
 
 const appRoute = new AppController();
 
-route.post('/app', appRoute.postApp);
+route.post('/upload', appRoute.upload);
 
 export default route;
