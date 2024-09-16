@@ -1,53 +1,23 @@
 import { Request, Response } from "express";
-import { GoogleAIFileManager } from '@google/generative-ai/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { AppService } from "../service/App.service";
+import { HttpException } from "../errors/HttpException";
 
 export class AppController {
+
     async upload(req: Request, res: Response) {
 
+        if (!req.file) throw new HttpException(404, 'File not found.');
 
+        const { originalname, path, mimetype } = req.file;
 
-        if (!process.env.GEMINI_API_KEY) {
-            return res.status(401).json({ message: 'GEMINI_API_KEY is required' });
-        }
+        const appService = new AppService(mimetype, originalname, path);
 
-        const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
+        const result = await appService.upload();
 
-        if (req.file) {
-            const { mimetype, originalname, path } = req.file;
+        const leitura = appService.transformResponse(result);
 
-            const uploadResonse = await fileManager.uploadFile(path, {
-                mimeType: mimetype,
-                displayName: originalname
-            })
+        if (!leitura) throw new HttpException(400, 'Bad request')
 
-            const genAi = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-            const model = genAi.getGenerativeModel(
-                {
-                    model: 'gemini-1.5-pro',
-                }
-            )
-
-            const result = await model.generateContent([
-                {
-                    fileData: {
-                        mimeType: uploadResonse.file.mimeType,
-                        fileUri: uploadResonse.file.uri
-                    }
-                },
-                {
-                    text: 'qual a quantidade de kWh consumido neste medidor?, retorne a resposta do medidor sempre entre asteriscos **'
-                }
-            ]);
-
-            console.log(result.response.text());
-        }
-
-
-
-
-
-        return res.json("Estou na rota post");
+        return res.json({ leitura });
     }
 }
